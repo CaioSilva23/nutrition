@@ -4,3 +4,5 @@
 python manage.py shell
 
 ctrl + d (seleciona várias linhas)
+
+for i in range(500): r.pk = None; r.slug = f'{r.slug}-{i}'; r.save()
