@@ -1,0 +1,6 @@
+
+
+
+python manage.py shell
+
+ctrl + d (seleciona várias linhas)

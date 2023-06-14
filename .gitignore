@@ -107,7 +107,7 @@ Control.ca-bundle
 Control.system-ca-bundle
 GitHub.sublime-settings
 
-*txt
+#*txt
 # Visual Studio Code #
 .vscode/*
 !.vscode/settings.json
