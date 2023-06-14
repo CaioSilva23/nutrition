@@ -28,7 +28,7 @@ def recipe_list_category(request, pk):
 
 
 def recipes_search(request):
-    search = request.GET.get('search')
+    search = request.GET.get('search', '').strip()
     if not search:
         raise Http404()
 
