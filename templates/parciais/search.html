@@ -1,8 +1,8 @@
 <!--BARRA PESQUISA-->
 <div class="search-container">
     <div class="container">
-        <form class='search-form'>
-            <input type="search" class='search-input' name="search">
+        <form class='search-form' method='GET' action='{% url "recipe:search" %}'>{% csrf_token %}
+            <input type="search" class='search-input' value="{{search}}" name="search" required >
             <button type="submit" class='search-button'><i class='fas fa-search'></i></button>
         </form>
     </div>

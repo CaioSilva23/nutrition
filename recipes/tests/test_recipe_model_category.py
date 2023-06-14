@@ -7,14 +7,15 @@ class RecipeModelTest(RecipeTestBase):
     def setUp(self) -> None:
         self.recipe = self.make_recipe()
         return super().setUp()
-    
+
     def make_recipe_default(self):
         recipe = self.make_recipe(
             author_data={'username': 'teste'},
             category_data={'name': 'category'},
-            is_published=False
+            slug='dsaad',
+            is_published=False,
             )
-         
+
         recipe.full_clean()
         recipe.save()
         return recipe
@@ -43,3 +44,9 @@ class RecipeModelTest(RecipeTestBase):
             recipe.is_published,
             msg='Recipe is published is not False'
         )
+
+    def test_recipe_string_represetantion(self):
+        self.assertEqual(str(self.recipe), self.recipe.title)
+
+    # def test_recipe_category_field_max_length(self):
+

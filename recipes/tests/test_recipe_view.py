@@ -50,13 +50,12 @@ class RecipeViewsTest(RecipeTestBase):
 
     # recipe detail
     def test_recipe_detail_view_function_is_correct(self):
-        view = resolve(reverse('recipe:detail', kwargs={'pk': 1}))
+        view = resolve(reverse('recipe:detail', kwargs={'slug': 'slug'}))
         self.assertIs(view.func, views.recipe_detail)
 
     def test_recipe_detail_view_return_status_code_404_if_no_recipes(self):
-        response = self.client.get(reverse('recipe:detail', kwargs={'pk': 1000}))  # noqa: E501
+        response = self.client.get(reverse('recipe:detail', kwargs={'slug': 'slug'}))  # noqa: E501
         self.assertEqual(response.status_code, 404)
-
 
     def test_recipe_detail_template_loads_the_correct_recipe(self):
         self.make_recipe(title="Ola teste")
@@ -66,14 +65,18 @@ class RecipeViewsTest(RecipeTestBase):
 
     def test_recipe_detail_template_dont_load_recipes_not_published(self):
         recipe = self.make_recipe(is_published=False)
-        response = self.client.get(reverse('recipe:detail', kwargs={'pk':recipe.pk}))
+        response = self.client.get(reverse('recipe:detail', kwargs={'slug':recipe.slug}))
         self.assertEqual(response.status_code, 404)
 
-
+    def test_recipe_detail_view_loads_correct_template(self):
+        recipe = self.make_recipe(title='teste detail')
+        response = self.client.get(reverse('recipe:detail', kwargs={'slug':recipe.slug}))
+        self.assertTemplateUsed(response, 'recipes/recipe_detail.html')
+        
     # recipe category
     def test_recipe_category_view_function_is_correct(self):
         view = resolve(reverse('recipe:category', kwargs={'pk': 1000}))
-        self.assertIs(view.func, views.category_list)
+        self.assertIs(view.func, views.recipe_list_category)
 
     def test_recipe_category_view_return_status_code_404_if_no_recipes(self):
         response = self.client.get(reverse('recipe:category', kwargs={'pk': 1000}))  # noqa: E501
@@ -89,3 +92,20 @@ class RecipeViewsTest(RecipeTestBase):
         recipe = self.make_recipe(is_published=False)
         response = self.client.get(reverse('recipe:category', kwargs={'pk':recipe.category.pk}))
         self.assertEqual(response.status_code, 404)
+
+    # view search
+    def test_recipe_search_view_function_is_correct(self):
+        view = resolve(reverse('recipe:search'))
+        self.assertIs(view.func, views.recipes_search)
+
+    def test_recipe_search_view_loads_correct_template(self):
+        url = reverse('recipe:search') + '?search=teste'
+        response = self.client.get(url)
+        self.assertTemplateUsed(response, 'recipes/recipe_search.html')
+
+    def test_recipe_search_raises_404_if_not_search_term(self):
+        response = self.client.get(reverse('recipe:search'))
+        self.assertEqual(response.status_code, 404)
+       
+
+
