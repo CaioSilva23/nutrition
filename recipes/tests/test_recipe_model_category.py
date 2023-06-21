@@ -47,6 +47,3 @@ class RecipeModelTest(RecipeTestBase):
 
     def test_recipe_string_represetantion(self):
         self.assertEqual(str(self.recipe), self.recipe.title)
-
-    # def test_recipe_category_field_max_length(self):
-

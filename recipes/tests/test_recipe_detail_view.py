@@ -21,10 +21,10 @@ class RecipeDetailViewTest(RecipeTestBase):
 
     def test_recipe_detail_template_dont_load_recipes_not_published(self):
         recipe = self.make_recipe(is_published=False)
-        response = self.client.get(reverse('recipe:detail', kwargs={'slug':recipe.slug}))
+        response = self.client.get(reverse('recipe:detail', kwargs={'slug': recipe.slug}))  # noqa: E501
         self.assertEqual(response.status_code, 404)
 
     def test_recipe_detail_view_loads_correct_template(self):
         recipe = self.make_recipe(title='teste detail')
-        response = self.client.get(reverse('recipe:detail', kwargs={'slug':recipe.slug}))
+        response = self.client.get(reverse('recipe:detail', kwargs={'slug': recipe.slug}))  # noqa: E501
         self.assertTemplateUsed(response, 'recipes/recipe_detail.html')

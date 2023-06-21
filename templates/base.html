@@ -16,9 +16,6 @@
     
     <!--CSS STATIC -->    
     <link rel="stylesheet" href="{% static 'recipes/css/style.css' %}">
-    
-    
-    
     <title>{% block title %}{% endblock title %}</title>
 </head>
 <body>
@@ -28,6 +25,10 @@
 
   <main class="main-content-container">
     {% block content %}{% endblock content %}
+    {% include 'parciais/pagination.html' %}
   </main>
+  <!--FOOTER -->
+{% include 'parciais/footer.html' %}
+<!-- END FOOTER -->
 </body>
 </html>
