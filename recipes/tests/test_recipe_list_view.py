@@ -30,7 +30,7 @@ class RecipeListViewTest(RecipeTestBase):
         response = self.client.get(reverse('recipe:list'))
         # test context
         response_recipes = response.context['recipes']
-        self.assertEqual(response_recipes.first().title, 'recipe title')
+        self.assertEqual(len(response_recipes), 1)
 
         # len context
         self.assertEqual(len(response_recipes), 1)

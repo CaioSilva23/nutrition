@@ -4,7 +4,8 @@ from recipes.models import Recipe
 from django.db.models import Q
 from utils.pagination import make_pagination
 import os
-
+from django.contrib import messages
+from django.contrib.messages import constants
 
 per_page = os.environ.get('PER_PAGE', 6)
 

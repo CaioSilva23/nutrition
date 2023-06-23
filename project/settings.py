@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from typing import List
+from django.contrib.messages import constants
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,10 +11,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-c&qi9toyzux#g66rh)(4t9ydu%pcbv2z^)_q2+g2&i(grc#@ri'  # noqa: E501
+SECRET_KEY = os.environ.get('SECRET_KEY', 'INSECURITY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True if os.environ.get('DEBUG') == '1' else False
 
 ALLOWED_HOSTS: List[str] = []
 
@@ -30,6 +31,7 @@ INSTALLED_APPS = [
 
     # my apps
     'recipes',
+    'author'
 ]
 
 MIDDLEWARE = [
@@ -130,3 +132,10 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Mensagens
+MESSAGE_TAGS = {
+    constants.ERROR: 'message-error',
+    constants.SUCCESS: 'message-success',
+    constants.WARNING: 'message-warning',
+}
