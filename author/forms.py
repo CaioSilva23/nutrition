@@ -17,38 +17,42 @@ class RegisterForm(forms.ModelForm):
         add_placeholder(self.fields['last_name'], 'Your last name')
         add_placeholder(self.fields['email'], 'Your email')
 
-    first_name = forms.CharField(label='First name', required=True)
+    first_name = forms.CharField(
+        min_length=4,
+        max_length=150,
+        label='First name',
+        error_messages={'required': 'This first name is required'})
 
     last_name = forms.CharField(
+        min_length=4,
+        max_length=150,
         label='Last name',
-        required=True,
-    )
+        error_messages={'required': 'This last name is required'})
 
     username = forms.CharField(
+        min_length=4,
+        max_length=150,
         label='Username',
-        required=True,
-        help_text='Obrigatório. 150 caracteres ou menos. Letras, números e @/./+/-/_ apenas.'
+        help_text='Obrigatório. 150 caracteres ou menos. Letras, números e @/./+/-/_ apenas.',  # noqa: E501
+        error_messages={'required': 'This field is required.'}
         )
 
     email = forms.EmailField(
         label='E-mail',
-        required=True,
-        help_text='The e-mail must be valid.'
+        help_text='The e-mail must be valid.',
+        error_messages={'required': 'This email is required'}
         )
 
     password = forms.CharField(
         label='Password',
-        required=True,
         validators=[strong_password],
         widget=forms.PasswordInput(attrs={'placeholder': 'Your password'}),
         help_text=(
             'Password must have at least one uppercase letter, '
             'one lowercase letter and one number. The length should be '
             'at least 8 characters.'
-        )
-        # error_messages={
-        #     'required': 'Password must not be empty'
-        # },
+        ),
+        error_messages={'required': 'Password must not be empty'},
         # help_text=(
         #     'Password must have at least one uppercase letter, '
         #     'one lowercase letter and one number. The length should be '
@@ -58,8 +62,9 @@ class RegisterForm(forms.ModelForm):
 
     password2 = forms.CharField(
         label='Confim password',
-        required=True,
-        widget=forms.PasswordInput(attrs={'placeholder': 'Reapet your password'}))
+        widget=forms.PasswordInput(attrs={'placeholder': 'Reapet your password'}),  # noqa: E501
+        error_messages={'required': 'Please, reapet your password'}
+        )
 
     class Meta:
         model = User
@@ -79,7 +84,7 @@ class RegisterForm(forms.ModelForm):
         email = self.cleaned_data.get('email', '')
         user_exists = User.objects.filter(email=email).exists()
         if user_exists:
-            raise ValidationError('User with this email already exists', code='invalid')
+            raise ValidationError('User with this email already exists', code='invalid')  # noqa: E501
         return email
 
     def clean(self) -> Dict[str, Any]:
