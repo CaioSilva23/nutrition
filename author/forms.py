@@ -3,10 +3,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from utils.strong_password import strong_password
-
-
-def add_placeholder(field, placeholder_val):
-    field.widget.attrs['placeholder'] = placeholder_val
+from utils.form import add_placeholder
 
 
 class RegisterForm(forms.ModelForm):
@@ -100,3 +97,12 @@ class RegisterForm(forms.ModelForm):
                     'password2': error_password
                 })
         return super().clean()
+
+
+class LoginForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        add_placeholder(self.fields['username'], 'Your user name')
+        add_placeholder(self.fields['password'], 'Your password')
+    username = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput())
