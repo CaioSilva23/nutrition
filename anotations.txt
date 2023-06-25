@@ -1,12 +1,21 @@
-
-
-
 python manage.py shell
 
 ctrl + d (seleciona várias linhas)
 
 for i in range(500): r.pk = None; r.slug = f'{r.slug}-{i}'; r.save()
 
-
-#coverage run -m pytest
+#coverage run -m pytest && coverage html
+OU
 #coverage html
+
+
+# comandos pytest
+
+# executando somente testes funcionais apartir da marcação
+pytest -m 'functional_test'
+
+# executando todos os testes menos os funcionais
+pytest -m 'not functional_test'
+
+# executando test pelo nome 
+pytest -k 'nome do teste'

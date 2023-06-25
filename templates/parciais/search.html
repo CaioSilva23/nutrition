@@ -2,7 +2,7 @@
 <div class="search-container">
     <div class="container">
         <form class='search-form' method='GET' action='{% url "recipe:search" %}'>{% csrf_token %}
-            <input type="search" class='search-input' value="{{search}}" name="search" required >
+            <input type="search" placeholder='Search for recipes...'  class='search-input' value="{{search}}" name="search" required >
             <button type="submit" class='search-button'><i class='fas fa-search'></i></button>
         </form>
     </div>
