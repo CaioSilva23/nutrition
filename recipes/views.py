@@ -1,11 +1,16 @@
-from django.shortcuts import render, get_object_or_404, get_list_or_404
-from django.http import Http404
+from django.forms.models import BaseModelForm
+from django.shortcuts import render, get_object_or_404, get_list_or_404, redirect
+from django.http import Http404, HttpResponse
 from recipes.models import Recipe
 from django.db.models import Q
+from django.views.generic import ListView, CreateView, UpdateView
 from utils.pagination import make_pagination
 import os
+from recipes.form import RecipeForm
 from django.contrib import messages
 from django.contrib.messages import constants
+from django.urls import reverse_lazy, reverse
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 per_page = os.environ.get('PER_PAGE', 6)
 
@@ -70,3 +75,28 @@ def recipes_search(request):
         'additional_url_query': f'&search={search}',
     }
     return render(request, 'recipes/recipe_search.html', ctx)
+
+
+class RecipeCreateView(LoginRequiredMixin, CreateView):
+    model = Recipe
+    template_name = 'recipes/recipe_new.html'
+    form_class = RecipeForm
+    success_url = reverse_lazy('author:dashboard')
+
+    def form_valid(self, form: BaseModelForm) -> HttpResponse:
+        recipe = form.save(commit=False)
+        recipe.author = self.request.user
+        recipe.save()
+        messages.success(self.request, 'New recipe add successfull')
+        return super().form_valid(form)
+
+
+class RecipeUpdateView(LoginRequiredMixin, UpdateView):
+    model = Recipe
+    form_class = RecipeForm
+    template_name = 'recipes/recipe_new.html'
+
+    def get_success_url(self) -> str:
+        slug = self.kwargs.get('slug')
+        messages.success(self.request, 'Recipe edit successfull')
+        return reverse_lazy('recipe:update', kwargs={'slug': slug})

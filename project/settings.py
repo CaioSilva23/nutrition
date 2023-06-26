@@ -139,3 +139,6 @@ MESSAGE_TAGS = {
     constants.SUCCESS: 'message-success',
     constants.WARNING: 'message-warning',
 }
+
+
+LOGIN_URL = 'author:login'

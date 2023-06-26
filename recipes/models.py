@@ -1,5 +1,7 @@
+from typing import Iterable, Optional
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.text import slugify
 
 
 class Category(models.Model):
@@ -36,4 +38,8 @@ class Recipe(models.Model):
 
     def __str__(self) -> str:
         return f'{self.title}'
-    
+
+
+    # def save(self, force_insert: bool = ..., force_update: bool = ..., using: str | None = ..., update_fields: Iterable[str] | None = ...) -> None:
+    #     self.slug = slugify(self.title)
+    #     return super().save(force_insert, force_update, using, update_fields)
