@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+
+{% block title %}Deletar receita{% endblock title %}
+
+{% block content %}
+
+<!--BARRA PESQUISA-->
+{% include 'parciais/search.html' %}
+<!--MESSAGES-->
+{% include 'parciais/messages.html' %}
+<div class="main-content container ">
+    <div class="dashboard center">
+        <h2>Deseja deletar a receita a baixo ?</h2>
+        <p>
+            {{recipe}} 
+        </p>
+        <form method='POST'>{% csrf_token %}
+            <a class='buttom' href="{% url 'author:dashboard' %}">Voltar</a>
+            <input class='buttom-del' type="submit" value="Sim">
+        </form>
+        
+    </div>
+  
+</div>
+{% endblock content %}

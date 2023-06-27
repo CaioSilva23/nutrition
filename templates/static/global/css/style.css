@@ -59,6 +59,11 @@ body {
   color: var(--color-dark-text);
 }
 
+.color{
+  color: var(--color-error-dark);
+  font-size: 2rem;
+}
+
 h1,
 h2,
 h3,
@@ -359,6 +364,22 @@ a {
   background: var(--color-primary-dark);
   color: var(--color-white);
 }
+
+.buttom{
+  padding: 1rem 2rem;
+  border: none;
+  background: var(--color-primary-dark);
+  color: var(--color-white);
+}
+
+.buttom-del{
+  padding: 1rem 2rem;
+  border: none;
+  background: var(--color-error-dark);
+  color: var(--color-white);
+}
+
+
 
 .inline-form {
   display: inline;

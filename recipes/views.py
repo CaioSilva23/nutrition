@@ -1,14 +1,15 @@
+from typing import Any, Optional
+from django.db import models
 from django.forms.models import BaseModelForm
 from django.shortcuts import render, get_object_or_404, get_list_or_404, redirect
 from django.http import Http404, HttpResponse
 from recipes.models import Recipe
 from django.db.models import Q
-from django.views.generic import ListView, CreateView, UpdateView
+from django.views.generic import View, CreateView, UpdateView, DetailView
 from utils.pagination import make_pagination
 import os
 from recipes.form import RecipeForm
 from django.contrib import messages
-from django.contrib.messages import constants
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -30,9 +31,21 @@ def recipe_list(request):
     return render(request, 'recipes/recipe_list.html', ctx)
 
 
+# class RecipeDetailView(LoginRequiredMixin, DetailView):
+#     model = Recipe
+#     template_name = 'recipes/recipe_detail.html'
+#     context_object_name = 'recipe'
+
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context["recipe"] = get_object_or_404(Recipe, slug=self.kwargs['slug'], is_published=True),  # noqa: E501
+#         return context
+
+
+
 def recipe_detail(request, slug):
     ctx = {
-        'recipe': get_object_or_404(Recipe.objects.order_by('-pk'), slug=slug, is_published=True),  # noqa: E501
+        'recipe': get_object_or_404(Recipe, slug=slug, is_published=True),  # noqa: E501
         'detail': True
     }
     return render(request, 'recipes/recipe_detail.html', ctx)
@@ -100,3 +113,37 @@ class RecipeUpdateView(LoginRequiredMixin, UpdateView):
         slug = self.kwargs.get('slug')
         messages.success(self.request, 'Recipe edit successfull')
         return reverse_lazy('recipe:update', kwargs={'slug': slug})
+
+    def get_queryset(self):
+        recipe = Recipe.objects.filter(is_published=False, author=self.request.user)  # noqa: E501
+        return recipe
+
+
+class RecipeDeleteView(LoginRequiredMixin, View):
+    def post(self, *args, **kwargs):
+        slug = self.request.POST.get('slug')
+        recipe = Recipe.objects.filter(
+            slug=slug,
+            is_published=False,
+            author=self.request.user).first()  # noqa: E501
+        if recipe:
+            recipe.delete()
+            messages.success(self.request, 'Receita deletada com sucesso!')
+            return redirect(reverse('author:dashboard'))
+        messages.error(self.request, 'Esta receita não é sua ou não existe!!!')
+        return redirect(reverse('author:dashboard'))
+
+
+
+# class RecipeDeleteView(LoginRequiredMixin, DeleteView):
+#     template_name = 'author/confirm_delete.html'
+#     model = Recipe
+#     context_object_name = 'recipe'
+
+#     def get_success_url(self) -> str:
+#         messages.success(self.request, 'Receita deletada com sucesso!')
+#         return reverse_lazy('author:dashboard')
+
+#     def get_queryset(self):
+#         recipe = Recipe.objects.filter(is_published=False, author=self.request.user)  # noqa: E501
+#         return recipe
