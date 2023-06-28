@@ -1,12 +1,10 @@
-from typing import Any, Dict, Mapping, Optional, Type, Union
+from typing import Any, Dict
 from django import forms
-from django.core.files.base import File
-from django.db.models.base import Model
-from django.forms.utils import ErrorList
 from recipes.models import Recipe
 from collections import defaultdict
 from django.core.exceptions import ValidationError
 from utils.is_positive import is_positive
+
 
 class RecipeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -15,7 +13,7 @@ class RecipeForm(forms.ModelForm):
 
     class Meta:
         model = Recipe
-        exclude = ('author', 'is_published', 'preparation_steps_is_html')
+        exclude = ('author', 'is_published', 'preparation_steps_is_html', 'slug')  # noqa: E501
         widgets = {
             'cover': forms.FileInput(attrs={
                 'class': 'span-2'
@@ -42,8 +40,10 @@ class RecipeForm(forms.ModelForm):
 
     def clean_title(self):
         title = self.cleaned_data['title']
+        if Recipe.objects.filter(title=title).exists():
+            self._my_errors['title'].append('Já existe uma receita com este título')  # noqa: E501
         if len(title) < 4:
-            self._my_errors['title'].append('field cannot be less than 5 characters')
+            self._my_errors['title'].append('field cannot be less than 5 characters')  # noqa: E501
         return title
 
     def clean_servings(self):

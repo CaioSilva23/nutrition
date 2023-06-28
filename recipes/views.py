@@ -1,11 +1,11 @@
-from typing import Any, Optional
-from django.db import models
+from typing import Any, Dict, Optional
+from django.db.models.query import QuerySet
 from django.forms.models import BaseModelForm
-from django.shortcuts import render, get_object_or_404, get_list_or_404, redirect
+from django.shortcuts import render, get_list_or_404, redirect
 from django.http import Http404, HttpResponse
 from recipes.models import Recipe
 from django.db.models import Q
-from django.views.generic import View, CreateView, UpdateView, DetailView
+from django.views.generic import View, CreateView, UpdateView, DetailView, ListView
 from utils.pagination import make_pagination
 import os
 from recipes.form import RecipeForm
@@ -14,6 +14,23 @@ from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 per_page = os.environ.get('PER_PAGE', 6)
+
+
+class RecipeListView(ListView):
+    template_name = 'recipes/recipe_list.html'
+    model = Recipe
+    context_object_name = 'recipes'
+    ordering = ('-id',)
+
+    def get_queryset(self, *args, **kwargs):
+        qs = super().queryset(*args, **kwargs)
+        qs = qs.filter(is_published=True)
+        return qs
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        ctx = super().get_context_data(**kwargs)
+
+        return ctx 
 
 
 def recipe_list(request):
@@ -31,24 +48,26 @@ def recipe_list(request):
     return render(request, 'recipes/recipe_list.html', ctx)
 
 
-# class RecipeDetailView(LoginRequiredMixin, DetailView):
-#     model = Recipe
-#     template_name = 'recipes/recipe_detail.html'
-#     context_object_name = 'recipe'
+class RecipeDetailView(LoginRequiredMixin, DetailView):
+    model = Recipe
+    template_name = 'recipes/recipe_detail.html'
+    context_object_name = 'recipe'
 
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context["recipe"] = get_object_or_404(Recipe, slug=self.kwargs['slug'], is_published=True),  # noqa: E501
-#         return context
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        ctx = super().get_context_data(**kwargs)
+        ctx.update({'detail': True})
+        return ctx
+
+    def get_queryset(self):
+        return Recipe.objects.filter(slug=self.kwargs['slug'], is_published=True)  # noqa: E501
 
 
-
-def recipe_detail(request, slug):
-    ctx = {
-        'recipe': get_object_or_404(Recipe, slug=slug, is_published=True),  # noqa: E501
-        'detail': True
-    }
-    return render(request, 'recipes/recipe_detail.html', ctx)
+# def recipe_detail(request, slug):
+#     ctx = {
+#         'recipe': get_object_or_404(Recipe, slug=slug, is_published=True),  # noqa: E501
+#         'detail': True
+#     }
+#     return render(request, 'recipes/recipe_detail.html', ctx)
 
 
 def recipe_list_category(request, pk):
@@ -132,7 +151,6 @@ class RecipeDeleteView(LoginRequiredMixin, View):
             return redirect(reverse('author:dashboard'))
         messages.error(self.request, 'Esta receita não é sua ou não existe!!!')
         return redirect(reverse('author:dashboard'))
-
 
 
 # class RecipeDeleteView(LoginRequiredMixin, DeleteView):

@@ -1,5 +1,3 @@
-from typing import Any, Dict
-from django.db.models.query import QuerySet
 from django.forms.models import BaseModelForm
 from django.http import HttpResponse
 from .forms import RegisterForm, LoginForm
@@ -59,10 +57,8 @@ class DashboardView(LoginRequiredMixin, ListView):
     model = Recipe
     context_object_name = 'recipes'
 
-    def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self):
         recipes = Recipe.objects.filter(
             author=self.request.user,
             is_published=False)
         return recipes
-
-
