@@ -30,7 +30,7 @@ class RecipeListView(ListView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
 
-        return ctx 
+        return ctx
 
 
 def recipe_list(request):
