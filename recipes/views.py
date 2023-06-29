@@ -1,11 +1,11 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from django.db.models.query import QuerySet
 from django.forms.models import BaseModelForm
-from django.shortcuts import render, get_list_or_404, redirect
-from django.http import Http404, HttpResponse
+from django.shortcuts import render, redirect
+from django.http import Http404, HttpRequest, HttpResponse
 from recipes.models import Recipe
 from django.db.models import Q
-from django.views.generic import View, CreateView, UpdateView, DetailView, ListView
+from django.views.generic import View, CreateView, UpdateView, DetailView, ListView  # noqa: E501
 from utils.pagination import make_pagination
 import os
 from recipes.form import RecipeForm
@@ -16,39 +16,34 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 per_page = os.environ.get('PER_PAGE', 6)
 
 
-class RecipeListView(ListView):
-    template_name = 'recipes/recipe_list.html'
+class RecipeListBase(ListView):
     model = Recipe
     context_object_name = 'recipes'
     ordering = ('-id',)
 
     def get_queryset(self, *args, **kwargs):
-        qs = super().queryset(*args, **kwargs)
-        qs = qs.filter(is_published=True)
+        qs = super().get_queryset(*args, **kwargs)
+        qs = qs.filter(
+            is_published=True,
+        )
         return qs
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
-
+        page_obj, pagination_range = make_pagination(
+                                    request=self.request,
+                                    queryset=ctx.get('recipes'),
+                                    per_page=per_page
+                                    )
+        ctx.update({'recipes': page_obj, 'pagination_range': pagination_range})
         return ctx
 
 
-def recipe_list(request):
-    recipes = Recipe.objects.filter(is_published=True).order_by('-id')
-
-    page_obj, pagination_range = make_pagination(
-                                    request=request,
-                                    queryset=recipes,
-                                    per_page=per_page
-                                    )
-    ctx = {
-        'recipes': page_obj,
-        'pagination_range': pagination_range
-    }
-    return render(request, 'recipes/recipe_list.html', ctx)
+class RecipeListView(RecipeListBase):
+    template_name = 'recipes/recipe_list.html'
 
 
-class RecipeDetailView(LoginRequiredMixin, DetailView):
+class RecipeDetailView(DetailView):
     model = Recipe
     template_name = 'recipes/recipe_detail.html'
     context_object_name = 'recipe'
@@ -62,51 +57,37 @@ class RecipeDetailView(LoginRequiredMixin, DetailView):
         return Recipe.objects.filter(slug=self.kwargs['slug'], is_published=True)  # noqa: E501
 
 
-# def recipe_detail(request, slug):
-#     ctx = {
-#         'recipe': get_object_or_404(Recipe, slug=slug, is_published=True),  # noqa: E501
-#         'detail': True
-#     }
-#     return render(request, 'recipes/recipe_detail.html', ctx)
+class RecipeListCategoryView(RecipeListBase):
+    template_name = 'recipes/recipe_list_category.html'
+
+    def get_queryset(self) -> QuerySet[Any]:
+        qs = super().get_queryset()
+        return qs.filter(category__name=self.kwargs['name'])
 
 
-def recipe_list_category(request, pk):
-    recipes = get_list_or_404(Recipe, category__id=pk, is_published=True)
+class RecipeFilterView(RecipeListBase):
+    template_name = 'recipe_search.html'
 
-    page_obj, pagination_range = make_pagination(
-                                request=request,
-                                queryset=recipes,
-                                )
-    ctx = {
-        'recipes': page_obj,
-        'pagination_range': pagination_range
-    }
+    def get_queryset(self, *args, **kwargs):
+        qs = super().get_queryset(*args, **kwargs)
+        self.search = self.request.GET.get('search', '').strip()
 
-    return render(request, 'recipes/recipe_search_category.html', ctx)
+        if not self.search:
+            raise Http404()
 
+        qs = qs.filter(
+            Q(title__icontains=self.search) | Q(description__icontains=self.search),  # noqa: E501
+            is_published=True)
 
-def recipes_search(request):
-    search = request.GET.get('search', '').strip()
-    if not search:
-        raise Http404()
+        return qs
 
-    recipes = Recipe.objects.filter(
-        Q(title__icontains=search) |
-        Q(description__icontains=search),
-        is_published=True).order_by('-pk')
-
-    page_obj, pagination_range = make_pagination(
-                                    request=request,
-                                    queryset=recipes,
-                                    )
-
-    ctx = {
-        'recipes': page_obj,
-        'search': search,
-        'pagination_range': pagination_range,
-        'additional_url_query': f'&search={search}',
-    }
-    return render(request, 'recipes/recipe_search.html', ctx)
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.update({
+            'search': self.search,
+            'additional_url_query': f'&search={self.search}',
+        })
+        return ctx
 
 
 class RecipeCreateView(LoginRequiredMixin, CreateView):
@@ -151,17 +132,3 @@ class RecipeDeleteView(LoginRequiredMixin, View):
             return redirect(reverse('author:dashboard'))
         messages.error(self.request, 'Esta receita não é sua ou não existe!!!')
         return redirect(reverse('author:dashboard'))
-
-
-# class RecipeDeleteView(LoginRequiredMixin, DeleteView):
-#     template_name = 'author/confirm_delete.html'
-#     model = Recipe
-#     context_object_name = 'recipe'
-
-#     def get_success_url(self) -> str:
-#         messages.success(self.request, 'Receita deletada com sucesso!')
-#         return reverse_lazy('author:dashboard')
-
-#     def get_queryset(self):
-#         recipe = Recipe.objects.filter(is_published=False, author=self.request.user)  # noqa: E501
-#         return recipe

@@ -25,7 +25,7 @@
         </span>
         {% if  recipe.category is not None %}
         <span class="recipe-author-item">
-            <a href="{% url 'recipe:category' recipe.category.pk%}">
+            <a href="{% url 'recipe:category' recipe.category.name%}">
                 <i class="fas fa-layer-group"></i>
                 <span>{{recipe.category.name}}</span>
             </a>
