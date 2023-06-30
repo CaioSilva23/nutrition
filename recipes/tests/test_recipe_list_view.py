@@ -7,7 +7,7 @@ class RecipeListViewTest(RecipeTestBase):
     # recipe list
     def test_recipe_list_view_function_is_correct(self):
         view = resolve(reverse('recipe:list'))
-        self.assertIs(view.func, views.recipe_list)
+        self.assertIs(view.func.view_class, views.RecipeListView)
 
     def test_recipe_list_view_return_status_code_200_OK(self):
         response = self.client.get(reverse('recipe:list'))

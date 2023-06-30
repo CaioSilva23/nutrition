@@ -7,7 +7,7 @@ class RecipeDetailViewTest(RecipeTestBase):
     # recipe detail
     def test_recipe_detail_view_function_is_correct(self):
         view = resolve(reverse('recipe:detail', kwargs={'slug': 'slug'}))
-        self.assertIs(view.func, views.recipe_detail)
+        self.assertIs(view.func.view_class, views.RecipeDetailView)
 
     def test_recipe_detail_view_return_status_code_404_if_no_recipes(self):
         response = self.client.get(reverse('recipe:detail', kwargs={'slug': 'slug'}))  # noqa: E501
@@ -15,7 +15,7 @@ class RecipeDetailViewTest(RecipeTestBase):
 
     def test_recipe_detail_template_loads_the_correct_recipe(self):
         self.make_recipe(title="Ola teste")
-        response = self.client.get(reverse('recipe:category', args=(1,)))
+        response = self.client.get(reverse('recipe:detail', args=('recipe-title',)))  # noqa: E501
         content = response.content.decode('utf-8')
         self.assertIn('Ola teste', content)
 

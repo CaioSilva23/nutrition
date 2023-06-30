@@ -28,7 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    "debug_toolbar",
     # my apps
     'recipes',
     'author'
@@ -36,6 +36,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -43,6 +44,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# DEBUG TOOLBAR
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
+ 
 
 ROOT_URLCONF = 'project.urls'
 
@@ -123,7 +130,7 @@ USE_TZ = True
 
 # STATIC
 # URL STATIC FILES
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # DIRS DE STATIC FILES
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'templates/static'),)

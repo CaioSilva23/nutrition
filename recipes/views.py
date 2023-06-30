@@ -1,18 +1,20 @@
 from typing import Any, Dict
+from django.db import models
 from django.db.models.query import QuerySet
 from django.forms.models import BaseModelForm
-from django.shortcuts import render, redirect
-from django.http import Http404, HttpRequest, HttpResponse
+from django.shortcuts import redirect
+from django.http import Http404, HttpResponse
 from recipes.models import Recipe
 from django.db.models import Q
 from django.views.generic import View, CreateView, UpdateView, DetailView, ListView  # noqa: E501
 from utils.pagination import make_pagination
 import os
+from django.http import JsonResponse
 from recipes.form import RecipeForm
 from django.contrib import messages
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+from django.forms.models import model_to_dict
 per_page = os.environ.get('PER_PAGE', 6)
 
 
@@ -25,7 +27,7 @@ class RecipeListBase(ListView):
         qs = super().get_queryset(*args, **kwargs)
         qs = qs.filter(
             is_published=True,
-        )
+        ).select_related('author', 'category')
         return qs
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -53,8 +55,10 @@ class RecipeDetailView(DetailView):
         ctx.update({'detail': True})
         return ctx
 
-    def get_queryset(self):
-        return Recipe.objects.filter(slug=self.kwargs['slug'], is_published=True)  # noqa: E501
+    def get_queryset(self) -> QuerySet[Any]:
+        qs = super().get_queryset()
+        qs = qs.filter(is_published=True).select_related('author', 'category')
+        return qs
 
 
 class RecipeListCategoryView(RecipeListBase):
@@ -66,7 +70,7 @@ class RecipeListCategoryView(RecipeListBase):
 
 
 class RecipeFilterView(RecipeListBase):
-    template_name = 'recipe_search.html'
+    template_name = 'recipes/recipe_search.html'
 
     def get_queryset(self, *args, **kwargs):
         qs = super().get_queryset(*args, **kwargs)
@@ -132,3 +136,44 @@ class RecipeDeleteView(LoginRequiredMixin, View):
             return redirect(reverse('author:dashboard'))
         messages.error(self.request, 'Esta receita não é sua ou não existe!!!')
         return redirect(reverse('author:dashboard'))
+
+
+class RecipeListViewApi(ListView):
+    model = Recipe
+    ordering = ('-id',)
+    context_object_name = 'recipes'
+
+    def get_queryset(self) -> QuerySet[Any]:
+        ctx = super().get_queryset()
+        ctx = ctx.filter(is_published=True).select_related('author', 'category')
+        return ctx
+
+    def render_to_response(self, context: Dict[str, Any], **response_kwargs: Any):  # noqa: E501
+        recipes = self.get_context_data()['recipes'].values()
+        return JsonResponse(
+            list(recipes),
+            safe=False
+        )
+
+
+class RecipeDetailViewApi(DetailView):
+    model = Recipe
+    context_object_name = 'recipe'
+
+    def get_queryset(self) -> QuerySet[Any]:
+        qs = super().get_queryset()
+        qs = qs.filter(is_published=True).select_related('author', 'category')
+        return qs
+
+    def render_to_response(self, context: Dict[str, Any], **response_kwargs: Any):  # noqa: E501
+        recipe = model_to_dict(self.get_context_data()['recipe'])
+
+        if recipe.get('cover'):
+            recipe['cover'] = recipe['cover'].url
+        else:
+            recipe['cover'] = ''
+
+        return JsonResponse(
+            recipe,
+            safe=False
+        )
