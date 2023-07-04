@@ -1,5 +1,4 @@
 from typing import Any, Dict
-from django.db import models
 from django.db.models.query import QuerySet
 from django.forms.models import BaseModelForm
 from django.shortcuts import redirect
@@ -15,6 +14,8 @@ from django.contrib import messages
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms.models import model_to_dict
+
+
 per_page = os.environ.get('PER_PAGE', 6)
 
 
@@ -28,6 +29,7 @@ class RecipeListBase(ListView):
         qs = qs.filter(
             is_published=True,
         ).select_related('author', 'category')
+        qs = qs.prefetch_related('tags')
         return qs
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -177,3 +179,12 @@ class RecipeDetailViewApi(DetailView):
             recipe,
             safe=False
         )
+
+
+class RecipeListViewTags(RecipeListBase):
+    template_name = 'recipes/tags.html'
+
+    def get_queryset(self, *args, **kwargs):
+        qs = super().get_queryset(*args, **kwargs)
+        qs = qs.filter(tags__slug=self.kwargs.get('slug', ''))
+        return qs

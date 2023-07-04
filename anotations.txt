@@ -19,3 +19,6 @@ pytest -m 'not functional_test'
 
 # executando test pelo nome 
 pytest -k 'nome do teste'
+
+
+# git reset --hard

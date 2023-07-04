@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+# from django.contrib.contenttypes.fields import GenericRelation
+from tag.models import Tag
 
 
 class Category(models.Model):
@@ -30,6 +32,7 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, default=None
     )
+    tags = models.ManyToManyField(Tag)
 
     class Meta:
         verbose_name = 'Recipe'
