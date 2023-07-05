@@ -2,14 +2,14 @@ from django.forms.models import BaseModelForm
 from django.http import HttpResponse
 from .forms import RegisterForm, LoginForm
 from django.contrib.auth.models import User
-from django.views.generic import CreateView, View, ListView
+from django.views.generic import CreateView, View, ListView, TemplateView
 from django.urls import reverse_lazy, reverse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from recipes.models import Recipe
-
+from author.models import Profile
 
 class RegisterView(CreateView):
     model = User
@@ -44,8 +44,6 @@ class LoginView(View):
 
 
 class LogoutView(LoginRequiredMixin, View):
-    login_url = 'author:login'
-
     def get(self, *args, **kwargs):
         logout(self.request)
         return redirect(reverse('author:login'))
@@ -62,3 +60,12 @@ class DashboardView(LoginRequiredMixin, ListView):
             author=self.request.user,
             is_published=False)
         return recipes
+
+
+class ProfileView(View):
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        print('USERR', user.profile.pk)
+        profile = get_object_or_404(Profile.objects.filter(pk=self.kwargs['pk']).prefetch_related('author'),
+                                    id=self.kwargs['pk'])
+        return render(request, 'author/profile.html', context={'profile': profile})
