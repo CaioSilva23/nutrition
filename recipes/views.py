@@ -29,7 +29,8 @@ class RecipeListBase(ListView):
         qs = qs.filter(
             is_published=True,
         ).select_related('author', 'category')
-        qs = qs.prefetch_related('tags')
+        qs = qs.prefetch_related('tags', 'author__profile')
+
         return qs
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
