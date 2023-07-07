@@ -40,8 +40,6 @@ class RecipeForm(forms.ModelForm):
 
     def clean_title(self):
         title = self.cleaned_data['title']
-        if Recipe.objects.filter(title=title).exists():
-            self._my_errors['title'].append('Já existe uma receita com este título')  # noqa: E501
         if len(title) < 4:
             self._my_errors['title'].append('field cannot be less than 5 characters')  # noqa: E501
         return title
