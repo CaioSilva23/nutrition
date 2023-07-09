@@ -5,6 +5,9 @@ from tag.models import Tag
 from django.conf import settings
 from PIL import Image
 import os
+from django.utils.text import slugify
+import string
+from random import SystemRandom
 
 
 class Category(models.Model):
@@ -14,7 +17,18 @@ class Category(models.Model):
         return self.name
 
 
+class RecipeManager(models.Manager):
+    def get_published(self):
+        return self.filter(is_published=True)\
+            .order_by('-id')\
+            .select_related('author', 'category')\
+            .prefetch_related('tags')\
+
+
+
 class Recipe(models.Model):
+    objects = RecipeManager()
+
     title = models.CharField(max_length=65, unique=True)
     description = models.CharField(max_length=165)
     slug = models.SlugField(unique=True)
@@ -22,7 +36,7 @@ class Recipe(models.Model):
     preparation_time_unit = models.CharField(max_length=65)
     servings = models.IntegerField()
     servings_unit = models.CharField(max_length=65)
-    preparation_steps = models.TextField()
+    preparation_steps = models.TextField(blank=True)
     preparation_steps_is_html = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -62,13 +76,19 @@ class Recipe(models.Model):
             quality=50,
         )
 
-
     def save(self, *args, **kwargs):
         if not self.slug:
-            slug = f'{slugify(self.title)}'
-            self.slug = slug
+            rand_letters = ''.join(
+                SystemRandom().choices(
+                    # LETRAS A a Z         # NÚMEROS 0 a 9
+                    string.ascii_letters + string.digits,
+                    k=5,
+                )
+            )
+            self.slug = slugify(f'{self.title}-{rand_letters}')
+
         saved = super().save(*args, **kwargs)
-        
+
         if self.cover:
             try:
                 self.resize_image(self.cover, 800)

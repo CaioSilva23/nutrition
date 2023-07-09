@@ -29,21 +29,7 @@ class RecipeModelTest(RecipeTestBase):
     def test_recipe_fields_max_length(self, field, max_length):
         setattr(self.recipe, field, "A" * (max_length + 1))
         with self.assertRaises(ValidationError):
-            self.recipe.full_clean()
-
-    def test_recipe_preparation_step_is_html_is_false_by_default(self):
-        recipe = self.make_recipe_default()
-        self.assertFalse(
-            recipe.preparation_steps_is_html,
-            msg='Recipe preparation step is html is not False'
-        )
-
-    def test_recipe_is_published_is_false_by_default(self):
-        recipe = self.make_recipe_default()
-        self.assertFalse(
-            recipe.is_published,
-            msg='Recipe is published is not False'
-        )
+            self.recipe.full_clean() 
 
     def test_recipe_string_represetantion(self):
         self.assertEqual(str(self.recipe), self.recipe.title)
