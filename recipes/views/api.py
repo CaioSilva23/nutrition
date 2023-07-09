@@ -2,12 +2,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from ..serializers import RecipeSerializer, TagSerializer
-from ..models import Recipe
+from ..models import Recipe, Category
 from tag.models import Tag
 from django.shortcuts import get_object_or_404
 
 
-@api_view(http_method_names=['get', 'post'])  # 
+@api_view(http_method_names=['get', 'post'])
 def recipe_api_list(request):
     if request.method == 'GET':
         recipes = Recipe.objects.get_published()
@@ -62,3 +62,14 @@ def recipe_api_tag_detail(request, pk):
     tag = get_object_or_404(Tag, pk=pk)
     serializer = TagSerializer(instance=tag, many=False)
     return Response(data=serializer.data)
+
+
+@api_view()
+def recipe_api_category_list(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    recipes = Recipe.objects.get_published().filter(category=category)
+    serializer = RecipeSerializer(
+        instance=recipes,
+        context={'request': request},
+        many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

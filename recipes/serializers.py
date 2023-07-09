@@ -53,7 +53,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     # preparation = serializers.SerializerMethodField(read_only=True)
     # servings_ = serializers.SerializerMethodField(read_only=True)
     author_object = UserSerializer(source='author', read_only=True)
-    category_object = CategorySerializer(many=False, source='category', read_only=True)
+    category_object = CategorySerializer(many=False, source='category', read_only=True)  # noqa: E501
     tag_objects = TagSerializer(many=True, source='tags', read_only=True)
     tag_links = serializers.HyperlinkedRelatedField(
         many=True,
